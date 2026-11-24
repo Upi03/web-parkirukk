@@ -43,23 +43,23 @@ class OwnerController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($request->filled('q')) {
-            $q = trim($request->get('q'));
+            $q = trim($request->input('q'));
             $transaksiQuery->where(function ($query) use ($q) {
                 $query->where('plat_nomor', 'like', "%{$q}%")
-                      ->orWhere('kode_tiket', 'like', "%{$q}%");
+                    ->orWhere('kode_tiket', 'like', "%{$q}%");
             });
         }
 
-        if ($request->filled('status') && $request->get('status') !== 'all') {
-            $transaksiQuery->where('status', $request->get('status'));
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $transaksiQuery->where('status', $request->input('status'));
         }
 
-        if ($request->filled('metode_bayar') && $request->get('metode_bayar') !== 'all') {
-            $transaksiQuery->where('metode_bayar', $request->get('metode_bayar'));
+        if ($request->filled('metode_bayar') && $request->input('metode_bayar') !== 'all') {
+            $transaksiQuery->where('metode_bayar', $request->input('metode_bayar'));
         }
 
-        if ($request->filled('jenis_kendaraan') && $request->get('jenis_kendaraan') !== 'all') {
-            $transaksiQuery->where('jenis_kendaraan', $request->get('jenis_kendaraan'));
+        if ($request->filled('jenis_kendaraan') && $request->input('jenis_kendaraan') !== 'all') {
+            $transaksiQuery->where('jenis_kendaraan', $request->input('jenis_kendaraan'));
         }
 
         $transaksis = $transaksiQuery->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
@@ -123,19 +123,19 @@ class OwnerController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($request->filled('q')) {
-            $q = trim($request->get('q'));
+            $q = trim($request->input('q'));
             $query->where(function ($sub) use ($q) {
                 $sub->where('plat_nomor', 'like', "%{$q}%")
                     ->orWhere('kode_tiket', 'like', "%{$q}%");
             });
         }
 
-        if ($request->filled('status') && $request->get('status') !== 'all') {
-            $query->where('status', $request->get('status'));
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
         }
 
-        if ($request->filled('metode_bayar') && $request->get('metode_bayar') !== 'all') {
-            $query->where('metode_bayar', $request->get('metode_bayar'));
+        if ($request->filled('metode_bayar') && $request->input('metode_bayar') !== 'all') {
+            $query->where('metode_bayar', $request->input('metode_bayar'));
         }
 
         $headers = [
@@ -203,7 +203,7 @@ class OwnerController extends Controller
                         $t->waktu_keluar ? $t->waktu_keluar->translatedFormat('d/m/Y H:i') : '-',
                         $t->durasi_menit ?? 0,
                         $durasiFormat,
-                        $t->total_bayar ? number_format($t->total_bayar, 0, ',', '.') : '0',
+                        $t->total_bayar ? number_format((float) $t->total_bayar, 0, ',', '.') : '0',
                         $t->metode_bayar ?? '-',
                         ucfirst($t->status),
                         $t->petugas ? $t->petugas->name : '-',
@@ -323,7 +323,8 @@ class OwnerController extends Controller
             $limitDays = min($daysDiff + 1, 31); // Max 31 point agar chart tetap bersih
 
             $step = ceil($daysDiff / 14); // Jika lebih dari 14 hari, langkah per step hari
-            if ($step < 1) $step = 1;
+            if ($step < 1)
+                $step = 1;
 
             while ($cursor->lte($endDate)) {
                 $currentDate = $cursor->copy();
@@ -381,7 +382,8 @@ class OwnerController extends Controller
         } else {
             $cursor = $startDate->copy()->startOfDay();
             $step = ceil($daysDiff / 14);
-            if ($step < 1) $step = 1;
+            if ($step < 1)
+                $step = 1;
 
             while ($cursor->lte($endDate)) {
                 $currentDate = $cursor->copy();
@@ -467,12 +469,12 @@ class OwnerController extends Controller
      */
     private function parseDateRange(Request $request): array
     {
-        $rangeKey = $request->get('range', '7_days');
+        $rangeKey = $request->input('range', '7_days');
 
         if ($request->filled('start_date') && $request->filled('end_date')) {
             try {
-                $startDate = Carbon::parse($request->get('start_date'))->startOfDay();
-                $endDate = Carbon::parse($request->get('end_date'))->endOfDay();
+                $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+                $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
                 $rangeKey = 'custom';
             } catch (\Throwable $e) {
                 $startDate = now()->subDays(6)->startOfDay();
@@ -539,10 +541,10 @@ class OwnerController extends Controller
         $query = Transaksi::with(['petugas', 'tarif', 'areaParkir']);
 
         // Filter Rentang Tanggal
-        $rangeKey = $request->get('range', '30_days');
+        $rangeKey = $request->input('range', '30_days');
         if ($request->filled('start_date') && $request->filled('end_date')) {
-            $startDate = Carbon::parse($request->get('start_date'))->startOfDay();
-            $endDate = Carbon::parse($request->get('end_date'))->endOfDay();
+            $startDate = Carbon::parse($request->input('start_date'))->startOfDay();
+            $endDate = Carbon::parse($request->input('end_date'))->endOfDay();
             $query->whereBetween('created_at', [$startDate, $endDate]);
         } elseif ($rangeKey !== 'all') {
             switch ($rangeKey) {
@@ -572,7 +574,7 @@ class OwnerController extends Controller
 
         // Filter Pencarian
         if ($request->filled('q')) {
-            $q = trim($request->get('q'));
+            $q = trim($request->input('q'));
             $query->where(function ($sub) use ($q) {
                 $sub->where('plat_nomor', 'like', "%{$q}%")
                     ->orWhere('kode_tiket', 'like', "%{$q}%");
@@ -580,28 +582,28 @@ class OwnerController extends Controller
         }
 
         // Filter Jenis Kendaraan
-        if ($request->filled('jenis_kendaraan') && $request->get('jenis_kendaraan') !== 'all') {
-            $query->where('jenis_kendaraan', $request->get('jenis_kendaraan'));
+        if ($request->filled('jenis_kendaraan') && $request->input('jenis_kendaraan') !== 'all') {
+            $query->where('jenis_kendaraan', $request->input('jenis_kendaraan'));
         }
 
         // Filter Area Parkir
-        if ($request->filled('area_id') && $request->get('area_id') !== 'all') {
-            $query->where('area_parkir_id', $request->get('area_id'));
+        if ($request->filled('area_id') && $request->input('area_id') !== 'all') {
+            $query->where('area_parkir_id', $request->input('area_id'));
         }
 
         // Filter Petugas
-        if ($request->filled('petugas_id') && $request->get('petugas_id') !== 'all') {
-            $query->where('petugas_id', $request->get('petugas_id'));
+        if ($request->filled('petugas_id') && $request->input('petugas_id') !== 'all') {
+            $query->where('petugas_id', $request->input('petugas_id'));
         }
 
         // Filter Status
-        if ($request->filled('status') && $request->get('status') !== 'all') {
-            $query->where('status', $request->get('status'));
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
         }
 
         // Filter Metode Bayar
-        if ($request->filled('metode_bayar') && $request->get('metode_bayar') !== 'all') {
-            $query->where('metode_bayar', $request->get('metode_bayar'));
+        if ($request->filled('metode_bayar') && $request->input('metode_bayar') !== 'all') {
+            $query->where('metode_bayar', $request->input('metode_bayar'));
         }
 
         // KPI Ringkasan Filter
@@ -647,14 +649,14 @@ class OwnerController extends Controller
             'durasi_menit' => $transaksi->durasi_menit,
             'durasi_format' => $this->formatDuration((int) ($transaksi->durasi_menit ?? 0)),
             'total_bayar' => $transaksi->total_bayar,
-            'total_bayar_formatted' => $transaksi->total_bayar ? 'Rp ' . number_format($transaksi->total_bayar, 0, ',', '.') : '-',
-            'uang_diterima' => $transaksi->uang_diterima ? 'Rp ' . number_format($transaksi->uang_diterima, 0, ',', '.') : '-',
-            'kembalian' => $transaksi->kembalian ? 'Rp ' . number_format($transaksi->kembalian, 0, ',', '.') : '-',
+            'total_bayar_formatted' => $transaksi->total_bayar ? 'Rp ' . number_format((float) $transaksi->total_bayar, 0, ',', '.') : '-',
+            'uang_diterima' => $transaksi->uang_diterima ? 'Rp ' . number_format((float) $transaksi->uang_diterima, 0, ',', '.') : '-',
+            'kembalian' => $transaksi->kembalian ? 'Rp ' . number_format((float) $transaksi->kembalian, 0, ',', '.') : '-',
             'metode_bayar' => $transaksi->metode_bayar ?? '-',
             'status' => $transaksi->status,
             'alasan_batal' => $transaksi->alasan_batal,
             'petugas' => $transaksi->petugas ? $transaksi->petugas->name : '-',
-            'tarif_per_jam' => $transaksi->tarif ? 'Rp ' . number_format($transaksi->tarif->tarif_per_jam, 0, ',', '.') : '-',
+            'tarif_per_jam' => $transaksi->tarif ? 'Rp ' . number_format((float) $transaksi->tarif->tarif_per_jam, 0, ',', '.') : '-',
         ]);
     }
 
@@ -666,8 +668,8 @@ class OwnerController extends Controller
         Carbon::setLocale('id');
 
         // Parameter bulan & tahun (default ke bulan & tahun ini)
-        $month = (int) $request->get('month', now()->month);
-        $year = (int) $request->get('year', now()->year);
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
 
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth()->startOfDay();
         $endDate = $startDate->copy()->endOfMonth()->endOfDay();
@@ -776,8 +778,8 @@ class OwnerController extends Controller
     {
         Carbon::setLocale('id');
 
-        $month = (int) $request->get('month', now()->month);
-        $year = (int) $request->get('year', now()->year);
+        $month = (int) $request->input('month', now()->month);
+        $year = (int) $request->input('year', now()->year);
 
         $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth()->startOfDay();
         $endDate = $startDate->copy()->endOfMonth()->endOfDay();
@@ -812,7 +814,8 @@ class OwnerController extends Controller
 
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $date = Carbon::createFromDate($year, $month, $d);
-                if ($date->isFuture()) break;
+                if ($date->isFuture())
+                    break;
 
                 $dayStart = $date->copy()->startOfDay();
                 $dayEnd = $date->copy()->endOfDay();

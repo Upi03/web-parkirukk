@@ -21,7 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Quick Search Global (Ctrl + K) untuk semua role yang terautentikasi
     Route::get('/quick-search', function (\Illuminate\Http\Request $request) {
-        $q = trim($request->get('q', ''));
+        $q = trim($request->input('q', ''));
         if (strlen($q) < 2) {
             return response()->json(['results' => []]);
         }

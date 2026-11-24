@@ -12,7 +12,7 @@ class StrukController extends Controller
 {
     public function index(Request $request)
     {
-        $type = $request->get('type', 'masuk');
+        $type = $request->input('type', 'masuk');
         if (!in_array($type, ['masuk', 'keluar'])) {
             $type = 'masuk';
         }
@@ -35,7 +35,7 @@ class StrukController extends Controller
         } else {
             // Struk Keluar: Menampilkan kendaraan yang sudah selesai checkout
             $query->where('status', 'selesai')
-                  ->orderBy('waktu_keluar', 'desc');
+                ->orderBy('waktu_keluar', 'desc');
 
             if ($request->filled('tanggal')) {
                 $query->whereDate('waktu_keluar', $request->tanggal);
@@ -46,7 +46,7 @@ class StrukController extends Controller
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('plat_nomor', 'like', "%{$search}%")
-                  ->orWhere('kode_tiket', 'like', "%{$search}%");
+                    ->orWhere('kode_tiket', 'like', "%{$search}%");
             });
         }
 
@@ -94,7 +94,7 @@ class StrukController extends Controller
         ];
 
         // Tentukan tipe struk: 'masuk' (struk masuk) atau 'keluar' (struk keluar)
-        $tipe = $request->get('type', ($transaksi->status === 'parkir' ? 'masuk' : 'keluar'));
+        $tipe = $request->input('type', ($transaksi->status === 'parkir' ? 'masuk' : 'keluar'));
 
         // Catat di log aktivitas
         if ($tipe === 'masuk') {

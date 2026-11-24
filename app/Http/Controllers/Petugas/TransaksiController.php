@@ -25,7 +25,7 @@ class TransaksiController extends Controller
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('plat_nomor', 'like', "%{$search}%")
-                  ->orWhere('kode_tiket', 'like', "%{$search}%");
+                    ->orWhere('kode_tiket', 'like', "%{$search}%");
             });
         }
 
@@ -257,7 +257,7 @@ class TransaksiController extends Controller
      */
     public function searchActive(Request $request)
     {
-        $q = trim($request->get('q', ''));
+        $q = trim($request->input('q', ''));
         if (strlen($q) < 2) {
             return response()->json(['success' => false, 'message' => 'Masukkan minimal 2 karakter']);
         }
@@ -266,7 +266,7 @@ class TransaksiController extends Controller
             ->where('status', 'parkir')
             ->where(function ($query) use ($q) {
                 $query->where('plat_nomor', 'like', "%{$q}%")
-                      ->orWhere('kode_tiket', 'like', "%{$q}%");
+                    ->orWhere('kode_tiket', 'like', "%{$q}%");
             })
             ->first();
 
